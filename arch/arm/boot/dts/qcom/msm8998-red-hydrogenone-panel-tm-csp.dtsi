@@ -7,3 +7,9 @@
  */
 
 /* TM CSP display and touch properties are isolated in this layer. */
+
+#include "msm8998-red-hydrogenone-panel-tm.dtsi"
+
+&lm36923h {
+	current-limitation = <14>;
+};

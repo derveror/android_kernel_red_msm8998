@@ -174,10 +174,10 @@ msm8998-qrd-overlay.dtbo-base :=  msm8998-qrd.dtb
 msm8998-qrd-vr1-overlay.dtbo-base :=  msm8998-qrd-vr1.dtb
 msm8998-qrd-skuk-overlay.dtbo-base :=  msm8998-qrd-skuk.dtb
 else
-dtb-$(CONFIG_ARCH_MSM8998) += msm8998-red-hydrogenone-jdi-pvt.dtb \
-	msm8998-red-hydrogenone-sim-pvt.dtb \
+dtb-$(CONFIG_ARCH_MSM8998) += msm8998-red-hydrogenone-tm-pvt.dtb \
 	msm8998-red-hydrogenone-tm-csp-pvt.dtb \
-	msm8998-red-hydrogenone-tm-pvt.dtb \
+	msm8998-red-hydrogenone-sim-pvt.dtb \
+	msm8998-red-hydrogenone-jdi-pvt.dtb \
 	msm8998-sim.dtb \
 	msm8998-rumi.dtb \
 	msm8998-cdp.dtb \
