@@ -1,0 +1,30 @@
+config TOUCHSCREEN_CYPRESS_CYTTSP5
+	bool "Cypress TrueTouch Gen5 touchscreen"
+	depends on I2C && OF
+	select INPUT_MT
+	help
+	  Enable the Cypress TrueTouch Gen5 controller used by the JDI
+	  production variant of the RED Hydrogen One.
+
+	  The driver provides the I2C transport, protocol-B multitouch,
+	  capacitive-button and proximity input paths described by the RED DT.
+
+config TOUCHSCREEN_CYPRESS_CYTTSP5_DEVICETREE_SUPPORT
+	bool
+	default y if TOUCHSCREEN_CYPRESS_CYTTSP5
+
+config TOUCHSCREEN_CYPRESS_CYTTSP5_I2C
+	bool
+	default y if TOUCHSCREEN_CYPRESS_CYTTSP5
+
+config TOUCHSCREEN_CYPRESS_CYTTSP5_MT_B
+	bool
+	default y if TOUCHSCREEN_CYPRESS_CYTTSP5
+
+config TOUCHSCREEN_CYPRESS_CYTTSP5_BUTTON
+	bool
+	default y if TOUCHSCREEN_CYPRESS_CYTTSP5
+
+config TOUCHSCREEN_CYPRESS_CYTTSP5_PROXIMITY
+	bool
+	default y if TOUCHSCREEN_CYPRESS_CYTTSP5

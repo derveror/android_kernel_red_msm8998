@@ -74,6 +74,14 @@ require_symbol() {
 		"$tmp_dir/vmlinux.nm" || fail "missing symbol $symbol"
 }
 
+reject_symbol() {
+	local symbol=$1
+	if grep -Eq "[[:space:]][[:alpha:]]([[:space:]])${symbol}$" \
+			"$tmp_dir/vmlinux.nm"; then
+		fail "unexpected symbol $symbol"
+	fi
+}
+
 require_kernel_string() {
 	local value=$1
 	grep -Fq -- "$value" "$tmp_dir/vmlinux.strings" || \
@@ -121,8 +129,23 @@ case "$component" in
 		;;
 	cyttsp5)
 		require_config CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5=y
+		for feature in DEVICETREE_SUPPORT I2C MT_B BUTTON PROXIMITY; do
+			require_config "CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5_${feature}=y"
+		done
 		require_symbol cyttsp5_i2c_probe
-		require_kernel_string cy,cyttsp5_i2c_adapter
+		for property in cy,cyttsp5_i2c_adapter cy,bus-reg-name \
+				cy,irq_gpio cy,rst_gpio cy,name; do
+			require_kernel_string "$property"
+		done
+		reject_symbol cyttsp5_loader_probe
+		reject_symbol cyttsp5_procfs_create
+		grep -Fq -- cy,cyttsp5_i2c_adapter "$tmp_dir/jdi-dtb.strings" || \
+			fail "JDI DTB lacks Cypress I2C adapter"
+		for dtb in "${dtbs[@]:0:3}"; do
+			if strings -a -n 3 "$dtb" | grep -Fq -- cy,cyttsp5_i2c_adapter; then
+				fail "non-JDI DTB contains Cypress I2C adapter: $dtb"
+			fi
+		done
 		for child in cyttsp5_mt cyttsp5_btn cyttsp5_proximity; do
 			grep -Fqx -- "$child" "$tmp_dir/jdi-dtb.strings" || \
 				fail "missing JDI DTB string $child"
