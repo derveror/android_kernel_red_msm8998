@@ -8130,6 +8130,17 @@ static struct snd_soc_dai_link ext_disp_be_dai_link[] = {
 	},
 };
 
+static struct snd_soc_dai_link_component spk_codec[] = {
+	{
+		.name = "tfa98xx.8-0034",
+		.dai_name = "tfa98xx-aif-8-34",
+	},
+	{
+		.name = "tfa98xx.8-0035",
+		.dai_name = "tfa98xx-aif-8-35",
+	},
+};
+
 static struct snd_soc_dai_link msm_mi2s_be_dai_links[] = {
 	{
 		.name = LPASS_BE_PRI_MI2S_RX,
@@ -9292,6 +9303,12 @@ static int msm_asoc_machine_probe(struct platform_device *pdev)
 			sizeof(struct msm_asoc_mach_data), GFP_KERNEL);
 	if (!pdata)
 		return -ENOMEM;
+
+	if (of_property_read_bool(pdev->dev.of_node,
+				  "qcom,tfa98xx-mi2s")) {
+		msm_mi2s_be_dai_links[0].codecs = spk_codec;
+		msm_mi2s_be_dai_links[0].num_codecs = ARRAY_SIZE(spk_codec);
+	}
 
 	card = populate_snd_card_dailinks(&pdev->dev);
 	if (!card) {

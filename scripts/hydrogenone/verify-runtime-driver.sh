@@ -76,7 +76,7 @@ require_symbol() {
 
 require_kernel_string() {
 	local value=$1
-	grep -Fqx -- "$value" "$tmp_dir/vmlinux.strings" || \
+	grep -Fq -- "$value" "$tmp_dir/vmlinux.strings" || \
 		fail "missing kernel string $value"
 }
 
@@ -113,7 +113,11 @@ case "$component" in
 		require_kernel_string nxp,tfa98xx
 		require_kernel_string 'TFA9894 detected'
 		require_kernel_string tfa98xx.cnt
+		require_kernel_string tfa98xx-aif-8-34
+		require_kernel_string tfa98xx-aif-8-35
+		require_kernel_string qcom,tfa98xx-mi2s
 		require_dtb_string tfa98xx_a3d.cnt
+		require_dtb_string tfa98xx,fw-name
 		;;
 	cyttsp5)
 		require_config CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5=y

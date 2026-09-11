@@ -1,0 +1,7 @@
+config SND_SOC_TFA9894
+	tristate "NXP TFA9894 speaker amplifier"
+	depends on I2C
+	select REGMAP_I2C
+	help
+	  Enable support for the paired NXP TFA9894 smart amplifiers used
+	  by the RED Hydrogen One.
