@@ -1,0 +1,22 @@
+TI LM36923H backlight controller on RED Hydrogen One
+
+Required properties:
+- compatible: must be "ti,lm36923h"
+- reg: I2C address of the primary controller; must be 0x36
+- hwen-gpio: GPIO driving the active-high hardware-enable input
+
+Optional properties:
+- current-limitation: maximum LED current in mA, in the range 1 through 25
+- dual-3d-bkl: the RED dual-backlight assembly is fitted. The driver mirrors
+  initialization, enable and brightness writes to the stock secondary address
+  0x37. Probe fails if either controller cannot be initialized.
+
+Example:
+
+	lm36923h@36 {
+		compatible = "ti,lm36923h";
+		reg = <0x36>;
+		hwen-gpio = <&tlmm 128 0>;
+		current-limitation = <14>;
+		dual-3d-bkl;
+	};

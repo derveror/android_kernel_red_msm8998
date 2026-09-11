@@ -390,6 +390,15 @@ config BACKLIGHT_LM3639
 	help
 	  This supports TI LM3639 Backlight + 1.5A Flash LED Driver
 
+config BACKLIGHT_LM36923H
+	tristate "Backlight Driver for TI LM36923H"
+	depends on BACKLIGHT_CLASS_DEVICE && I2C && OF && GPIOLIB
+	select NEW_LEDS
+	select LEDS_CLASS
+	help
+	  Say Y here to enable the LM36923H backlight controllers used by
+	  the RED Hydrogen One, including its dual-controller configuration.
+
 config BACKLIGHT_LP855X
 	tristate "Backlight driver for TI LP855X"
 	depends on BACKLIGHT_CLASS_DEVICE && I2C && PWM
