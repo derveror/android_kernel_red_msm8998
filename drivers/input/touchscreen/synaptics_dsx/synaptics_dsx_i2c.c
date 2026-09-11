@@ -493,6 +493,7 @@ MODULE_DEVICE_TABLE(i2c, synaptics_rmi4_id_table);
 
 #ifdef CONFIG_OF
 static struct of_device_id dsx_match_table[] = {
+	{ .compatible = "synaptics,dsx-i2c",},
 	{ .compatible = "synaptics,dsx",},
 	{ },
 };
