@@ -1,0 +1,17 @@
+menuconfig INPUT_FINGERPRINT
+	bool "Fingerprint sensor support"
+	depends on INPUT
+	help
+	  Say Y here to enable fingerprint sensor platform drivers.
+
+if INPUT_FINGERPRINT
+
+config INPUT_FPC_FINGERPRINT
+	bool "FPC1020 platform/TEE resource driver"
+	depends on OF && GPIOLIB && PINCTRL && REGULATOR
+	help
+	  Controls the GPIO, pinctrl, regulator and interrupt resources used by
+	  an FPC1020 fingerprint sensor. Sensor transactions remain in the
+	  trusted execution environment; this driver does not access sensor data.
+
+endif

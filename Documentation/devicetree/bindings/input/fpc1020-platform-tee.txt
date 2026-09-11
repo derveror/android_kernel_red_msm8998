@@ -1,0 +1,36 @@
+FPC1020 platform/TEE fingerprint resource driver
+
+The driver controls the electrical resources used by an FPC1020 sensor. It
+does not transfer fingerprint data; those transactions are owned by the TEE.
+
+Required properties:
+- compatible: must be "fpc,fpc1020"
+- fpc,gpio_irq: GPIO connected to the sensor interrupt output
+- fpc,gpio_rst: GPIO connected to the active-low sensor reset input
+- pinctrl-names: must contain "fpc1020_reset_reset",
+  "fpc1020_reset_active" and "fpc1020_irq_active"
+- pinctrl-0, pinctrl-1, pinctrl-2: phandles for those named states
+- vcc_spi-supply: SPI-interface supply
+- vdd_ana-supply: sensor analog supply
+- vdd_io-supply: sensor I/O supply
+
+Optional properties:
+- fpc,enable-wakeup: mark the IRQ as a no-suspend wake source
+- fpc,enable-on-boot: prepare regulators and reset at probe time
+
+Example:
+
+	fingerprint {
+		compatible = "fpc,fpc1020";
+		fpc,gpio_irq = <&tlmm 121 0>;
+		fpc,gpio_rst = <&tlmm 32 0>;
+		pinctrl-names = "fpc1020_reset_reset",
+			"fpc1020_reset_active", "fpc1020_irq_active";
+		pinctrl-0 = <&fpc_reset_low>;
+		pinctrl-1 = <&fpc_reset_high>;
+		pinctrl-2 = <&fpc_irq_active>;
+		vcc_spi-supply = <&pm8998_s4>;
+		vdd_ana-supply = <&pm8998_l18>;
+		vdd_io-supply = <&pm8998_l18>;
+		fpc,enable-on-boot;
+	};
