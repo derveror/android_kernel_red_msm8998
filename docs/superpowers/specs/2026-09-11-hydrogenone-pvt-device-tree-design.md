@@ -41,12 +41,12 @@ development EVT/DVT variants remain outside the initial scope.
 The appended order will match the relative order of the four PVT entries in
 the supplied stock image:
 
-| Order | Stock entry | Variant | `fih,hw-id` | `cm,display-id` |
-|---:|---|---|---|---|
-| 1 | `stock.dtb.1` | JDI PVT | `<4 4 0>` | `<0x64>` |
-| 2 | `stock.dtb.4` | SIM PVT | `<4 4 0>` | `<0x7f>` |
-| 3 | `stock.dtb.10` | TM CSP PVT | `<4 4 0>` | `<0x0e>` |
-| 4 | `stock.dtb.19` | TM PVT | `<4 4 0>` | `<0x02>` |
+| Order | Physical stock ordinal | Extracted file | Variant | `fih,hw-id` | `cm,display-id` |
+|---:|---:|---|---|---|---|
+| 1 | 37 | `stock.dtb.19` | TM PVT | `<4 4 0>` | `<0x02>` |
+| 2 | 46 | `stock.dtb.10` | TM CSP PVT | `<4 4 0>` | `<0x0e>` |
+| 3 | 52 | `stock.dtb.4` | SIM PVT | `<4 4 0>` | `<0x7f>` |
+| 4 | 55 | `stock.dtb.1` | JDI PVT | `<4 4 0>` | `<0x64>` |
 
 All four retain the stock root matching data:
 
@@ -126,7 +126,7 @@ Before accepting the implementation:
 3. Decompile the four built DTBs and verify their model, compatible strings,
    Qualcomm IDs, FIH PVT ID and display IDs.
 4. Verify the concatenated image contains exactly four DTBs in the selected
-   JDI, SIM, TM CSP, TM order.
+   TM, TM CSP, SIM, JDI physical stock order.
 5. Verify that no built PVT DTB contains `cloudminds,smartport` or
    `cm,smartp-req`.
 6. Verify that all four retain the required ordinary USB, Bluetooth, charging,

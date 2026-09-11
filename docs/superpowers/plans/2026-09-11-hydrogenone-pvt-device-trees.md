@@ -13,7 +13,7 @@
 ## Global Constraints
 
 - Target branch is `lineage-22.2` in `/home/surface/los/kernel/red/msm8998`; baseline is Linux `4.4.302`.
-- Support only JDI PVT, SIM PVT, TM CSP PVT and TM PVT in their relative stock order.
+- Support only TM PVT, TM CSP PVT, SIM PVT and JDI PVT in their relative physical stock order.
 - Preserve `qcom,msm-id = <0x124 0x20001>`, `qcom,board-id = <8 0 1 0>` and `fih,hw-id = <4 4 0>`.
 - Preserve display IDs JDI `<0x64>`, SIM `<0x7f>`, TM CSP `<0x0e>` and TM `<0x02>`.
 - Do not add `cloudminds,smartport`, `cm,smartp-req` or external SmartPort power controls.
@@ -126,13 +126,13 @@ Each root defines its exact stock model, common compatible/board/MSM/FIH IDs and
 
 - [ ] **Step 3: Register only the four new DTB targets**
 
-Add the four files to the `CONFIG_ARCH_MSM8998` DTB list in this order:
+Add the four files to the `CONFIG_ARCH_MSM8998` DTB list in this physical stock order:
 
 ```make
-msm8998-red-hydrogenone-jdi-pvt.dtb
-msm8998-red-hydrogenone-sim-pvt.dtb
-msm8998-red-hydrogenone-tm-csp-pvt.dtb
 msm8998-red-hydrogenone-tm-pvt.dtb
+msm8998-red-hydrogenone-tm-csp-pvt.dtb
+msm8998-red-hydrogenone-sim-pvt.dtb
+msm8998-red-hydrogenone-jdi-pvt.dtb
 ```
 
 - [ ] **Step 4: Configure exact appended names**
@@ -140,7 +140,7 @@ msm8998-red-hydrogenone-tm-pvt.dtb
 Set one defconfig value with names without the `.dtb` suffix:
 
 ```text
-CONFIG_BUILD_ARM64_APPENDED_DTB_IMAGE_NAMES="qcom/msm8998-red-hydrogenone-jdi-pvt qcom/msm8998-red-hydrogenone-sim-pvt qcom/msm8998-red-hydrogenone-tm-csp-pvt qcom/msm8998-red-hydrogenone-tm-pvt"
+CONFIG_BUILD_ARM64_APPENDED_DTB_IMAGE_NAMES="qcom/msm8998-red-hydrogenone-tm-pvt qcom/msm8998-red-hydrogenone-tm-csp-pvt qcom/msm8998-red-hydrogenone-sim-pvt qcom/msm8998-red-hydrogenone-jdi-pvt"
 ```
 
 - [ ] **Step 5: Build and inspect all four skeleton DTBs**
@@ -346,10 +346,10 @@ Verify byte-for-byte that:
 
 ```text
 Image.gz-dtb = Image.gz
-             + JDI PVT DTB
-             + SIM PVT DTB
-             + TM CSP PVT DTB
              + TM PVT DTB
+             + TM CSP PVT DTB
+             + SIM PVT DTB
+             + JDI PVT DTB
 ```
 
 Use a streaming comparison or a temporary concatenation under `/tmp`; never
