@@ -40,6 +40,7 @@
 
 #include "dm-verity.h"
 #include "dm-android-verity.h"
+#include "dm-android-verity-policy.h"
 
 static char verifiedbootstate[VERITY_COMMANDLINE_PARAM_LENGTH];
 static char veritymode[VERITY_COMMANDLINE_PARAM_LENGTH];
@@ -693,6 +694,7 @@ static int android_verity_ctr(struct dm_target *ti, unsigned argc, char **argv)
 	dev_t uninitialized_var(dev);
 	struct android_metadata *metadata = NULL;
 	int err = 0, i, mode;
+	bool allow_linear_without_key = false;
 	char *key_id = NULL, *table_ptr, dummy, *target_device,
 	*verity_table_args[VERITY_TABLE_ARGS + 2 + VERITY_TABLE_OPT_FEC_ARGS];
 	/* One for specifying number of opt args and one for mode */
@@ -708,7 +710,10 @@ static int android_verity_ctr(struct dm_target *ti, unsigned argc, char **argv)
 		/* Use the default keyid */
 		if (default_verity_key_id())
 			key_id = veritykeyid;
-		else if (!is_eng()) {
+		else if (dm_android_verity_allow_linear_without_key(
+				is_eng(), is_unlocked()))
+			allow_linear_without_key = true;
+		else {
 			DMERR("veritykeyid= is not set");
 			handle_error();
 			return -EINVAL;
@@ -730,7 +735,7 @@ static int android_verity_ctr(struct dm_target *ti, unsigned argc, char **argv)
 		return -EINVAL;
 	}
 
-	if (is_eng())
+	if (is_eng() || allow_linear_without_key)
 		return create_linear_device(ti, dev, target_device);
 
 	strreplace(key_id, '#', ' ');
