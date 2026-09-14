@@ -5712,6 +5712,21 @@ static int qseecom_query_app_loaded(struct qseecom_dev_handle *data,
 		pr_err(" scm call to check if app is loaded failed");
 		return ret;	/* scm call failed */
 	}
+	/*
+	 * RED's appsbl loads the 64-bit Keymaster trustlet from the dedicated
+	 * keymaster_a/keymaster_b partition as "keymaster64".  The Pie
+	 * Gatekeeper blob still queries its historical "keymaster" alias.
+	 * Stock RED kernels resolve both names to the same secure app id.
+	 */
+	if (!app_id && qseecom.is_apps_region_protected &&
+		!strcmp(query_req.app_name, "keymaster")) {
+		strlcpy(req.app_name, "keymaster64", MAX_APP_NAME_SIZE);
+		ret = __qseecom_check_app_exists(req, &app_id);
+		if (ret) {
+			pr_err("scm call to check keymaster64 alias failed");
+			return ret;
+		}
+	}
 	if (app_id) {
 		pr_debug("App id %d (%s) already exists\n", app_id,
 			(char *)(req.app_name));
