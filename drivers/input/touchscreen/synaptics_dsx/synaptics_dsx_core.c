@@ -3497,8 +3497,36 @@ static int synaptics_dsx_regulator_configure(struct synaptics_rmi4_data
 			*rmi4_data)
 {
 	int retval;
+	const char *legacy_regulator_name;
 	u32 voltage_supply[2];
 	u32 current_supply;
+
+	/*
+	 * RED's stock DSX binding predates the dual-rail voltage/current
+	 * properties used by this driver.  It names its only managed supply
+	 * through synaptics,bus-reg-name and leaves the rail constraints to
+	 * the board regulator definition.
+	 */
+	retval = of_property_read_string(
+			rmi4_data->pdev->dev.parent->of_node,
+			"synaptics,bus-reg-name", &legacy_regulator_name);
+	if (!retval) {
+		rmi4_data->regulator_vdd = regulator_get(rmi4_data->pdev->dev.parent,
+			legacy_regulator_name);
+		if (IS_ERR(rmi4_data->regulator_vdd)) {
+			dev_err(rmi4_data->pdev->dev.parent,
+					"%s: Failed to get legacy bus regulator\n",
+					__func__);
+			retval = PTR_ERR(rmi4_data->regulator_vdd);
+			rmi4_data->regulator_vdd = NULL;
+			return retval;
+		}
+
+		rmi4_data->regulator_avdd = NULL;
+		return 0;
+	}
+	if (retval != -EINVAL)
+		return retval;
 
 	/* Regulator VDD */
 	rmi4_data->regulator_vdd = regulator_get(rmi4_data->pdev->dev.parent,
@@ -3629,18 +3657,22 @@ static int synaptics_dsx_regulator_enable(struct synaptics_rmi4_data
 				__func__);
 			return retval;
 		}
-		retval = regulator_enable(rmi4_data->regulator_avdd);
-		if (retval) {
-			dev_err(rmi4_data->pdev->dev.parent,
-				"%s: Failed to enable regulator avdd\n",
-				__func__);
-			regulator_disable(rmi4_data->regulator_vdd);
-			return retval;
+		if (rmi4_data->regulator_avdd) {
+			retval = regulator_enable(rmi4_data->regulator_avdd);
+			if (retval) {
+				dev_err(rmi4_data->pdev->dev.parent,
+					"%s: Failed to enable regulator avdd\n",
+					__func__);
+				regulator_disable(rmi4_data->regulator_vdd);
+				return retval;
+			}
+			msleep(rmi4_data->hw_if->board_data->power_delay_ms);
 		}
-		msleep(rmi4_data->hw_if->board_data->power_delay_ms);
 	} else {
-		regulator_disable(rmi4_data->regulator_vdd);
-		regulator_disable(rmi4_data->regulator_avdd);
+		if (rmi4_data->regulator_vdd)
+			regulator_disable(rmi4_data->regulator_vdd);
+		if (rmi4_data->regulator_avdd)
+			regulator_disable(rmi4_data->regulator_avdd);
 	}
 
 	return 0;
@@ -3920,11 +3952,17 @@ err_config_gpio:
 	}
 
 err_set_gpio:
-	regulator_disable(rmi4_data->regulator_vdd);
-	regulator_disable(rmi4_data->regulator_avdd);
+	if (rmi4_data->regulator_vdd) {
+		regulator_disable(rmi4_data->regulator_vdd);
+	}
+	if (rmi4_data->regulator_avdd) {
+		regulator_disable(rmi4_data->regulator_avdd);
+	}
 err_regulator_enable:
-	regulator_put(rmi4_data->regulator_vdd);
-	regulator_put(rmi4_data->regulator_avdd);
+	if (rmi4_data->regulator_vdd)
+		regulator_put(rmi4_data->regulator_vdd);
+	if (rmi4_data->regulator_avdd)
+		regulator_put(rmi4_data->regulator_avdd);
 err_regulator_configure:
 	kfree(rmi4_data);
 
