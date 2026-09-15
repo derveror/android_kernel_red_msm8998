@@ -8,7 +8,6 @@ from pathlib import Path
 
 KERNEL_ROOT = Path(__file__).resolve().parents[1]
 DEFCONFIG = "lineageos_hydrogenone_defconfig"
-ARM64_MODULE_HEADER = KERNEL_ROOT / "arch/arm64/include/asm/module.h"
 
 
 def resolved_hydrogenone_config() -> dict[str, str]:
@@ -34,6 +33,34 @@ def resolved_hydrogenone_config() -> dict[str, str]:
         return values
 
 
+def preprocessed_arm64_module_macros() -> dict[str, str]:
+    result = subprocess.run(
+        [
+            "cc",
+            "-dM",
+            "-E",
+            "-x",
+            "c",
+            "-DCONFIG_RANDOMIZE_BASE",
+            "-DCONFIG_MODVERSIONS",
+            "-D__ASM_MEMORY_H",
+            f"-I{KERNEL_ROOT / 'arch/arm64/include'}",
+            f"-I{KERNEL_ROOT / 'include'}",
+            "-",
+        ],
+        input="#include <asm/module.h>\n",
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    macros: dict[str, str] = {}
+    for line in result.stdout.splitlines():
+        fields = line.split(maxsplit=2)
+        if len(fields) >= 2 and fields[0] == "#define":
+            macros[fields[1]] = fields[2] if len(fields) == 3 else ""
+    return macros
+
+
 class HydrogenOneDefconfigContractTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
@@ -46,11 +73,17 @@ class HydrogenOneDefconfigContractTest(unittest.TestCase):
             "built-in qcacld exceeds the RED bootloader's 16 MiB kernel payload window",
         )
 
-    def test_arm64_does_not_unapply_abs_crc_without_a_relocation(self) -> None:
-        self.assertNotIn(
-            "#define ARCH_RELOCATES_KCRCTAB",
-            ARM64_MODULE_HEADER.read_text(encoding="utf-8"),
-            "Clang/LLD emits absolute kernel CRCs without dynamic relocations",
+    def test_arm64_unapplies_kaslr_from_kernel_symbol_crcs(self) -> None:
+        macros = preprocessed_arm64_module_macros()
+        self.assertIn(
+            "ARCH_RELOCATES_KCRCTAB",
+            macros,
+            "the module loader must remove the ARM64 KASLR delta from kernel CRCs",
+        )
+        self.assertEqual(
+            macros.get("reloc_start"),
+            "(kimage_vaddr - KIMAGE_VADDR)",
+            "kernel symbol CRCs are relocated by the kernel image KASLR delta",
         )
 
     def test_red_runtime_drivers_remain_builtin(self) -> None:
