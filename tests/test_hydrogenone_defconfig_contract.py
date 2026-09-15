@@ -38,11 +38,11 @@ class HydrogenOneDefconfigContractTest(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.config = resolved_hydrogenone_config()
 
-    def test_large_wlan_driver_is_a_loadable_module(self) -> None:
+    def test_qca_cld_wlan_driver_is_builtin(self) -> None:
         self.assertEqual(
             self.config.get("CONFIG_QCA_CLD_WLAN"),
-            "m",
-            "built-in qcacld makes the RED kernel image too large for the bootloader",
+            "y",
+            "the RED 4.4 module loader corrupts qcacld symbol CRCs after KASLR relocation",
         )
 
     def test_red_runtime_drivers_remain_builtin(self) -> None:
