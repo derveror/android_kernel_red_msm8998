@@ -8,6 +8,7 @@ from pathlib import Path
 
 KERNEL_ROOT = Path(__file__).resolve().parents[1]
 DEFCONFIG = "lineageos_hydrogenone_defconfig"
+ARM64_MODULE_HEADER = KERNEL_ROOT / "arch/arm64/include/asm/module.h"
 
 
 def resolved_hydrogenone_config() -> dict[str, str]:
@@ -38,11 +39,18 @@ class HydrogenOneDefconfigContractTest(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.config = resolved_hydrogenone_config()
 
-    def test_qca_cld_wlan_driver_is_builtin(self) -> None:
+    def test_large_wlan_driver_is_a_loadable_module(self) -> None:
         self.assertEqual(
             self.config.get("CONFIG_QCA_CLD_WLAN"),
-            "y",
-            "the RED 4.4 module loader corrupts qcacld symbol CRCs after KASLR relocation",
+            "m",
+            "built-in qcacld exceeds the RED bootloader's 16 MiB kernel payload window",
+        )
+
+    def test_arm64_does_not_unapply_abs_crc_without_a_relocation(self) -> None:
+        self.assertNotIn(
+            "#define ARCH_RELOCATES_KCRCTAB",
+            ARM64_MODULE_HEADER.read_text(encoding="utf-8"),
+            "Clang/LLD emits absolute kernel CRCs without dynamic relocations",
         )
 
     def test_red_runtime_drivers_remain_builtin(self) -> None:
