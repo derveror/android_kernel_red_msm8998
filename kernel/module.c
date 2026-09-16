@@ -1313,7 +1313,14 @@ static int check_version(Elf_Shdr *sechdrs,
 		if (strcmp(versions[i].name, symname) != 0)
 			continue;
 
-		if (versions[i].crc == maybe_relocated(*crc, crc_owner))
+		/*
+		 * GNU ld records absolute kcrctab entries as dynamic
+		 * relocations on arm64, while LLD can resolve the same entries
+		 * to their raw 32-bit CRC values.  Accept the raw value first,
+		 * then the architecture-adjusted value for relocated tables.
+		 */
+		if (versions[i].crc == *crc ||
+		    versions[i].crc == maybe_relocated(*crc, crc_owner))
 			return 1;
 		pr_debug("Found checksum %lX vs module %lX\n",
 		       maybe_relocated(*crc, crc_owner), versions[i].crc);

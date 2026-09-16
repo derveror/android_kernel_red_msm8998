@@ -8,6 +8,7 @@ from pathlib import Path
 
 KERNEL_ROOT = Path(__file__).resolve().parents[1]
 DEFCONFIG = "lineageos_hydrogenone_defconfig"
+MODULE_SOURCE = KERNEL_ROOT / "kernel/module.c"
 
 
 def resolved_hydrogenone_config() -> dict[str, str]:
@@ -84,6 +85,16 @@ class HydrogenOneDefconfigContractTest(unittest.TestCase):
             macros.get("reloc_start"),
             "(kimage_vaddr - KIMAGE_VADDR)",
             "kernel symbol CRCs are relocated by the kernel image KASLR delta",
+        )
+
+    def test_module_loader_accepts_raw_or_kaslr_relocated_kernel_crcs(self) -> None:
+        source = MODULE_SOURCE.read_text(encoding="utf-8")
+        self.assertRegex(
+            source,
+            r"if \(versions\[i\]\.crc == \*crc \|\|\s*"
+            r"versions\[i\]\.crc == maybe_relocated\(\*crc, crc_owner\)\)",
+            "Clang/LLD can leave absolute CRCs unrelocated while GNU-style "
+            "links require the ARM64 KASLR adjustment; the loader must accept both",
         )
 
     def test_red_runtime_drivers_remain_builtin(self) -> None:
