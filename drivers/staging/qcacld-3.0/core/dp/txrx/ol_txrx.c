@@ -1221,18 +1221,16 @@ static void ol_txrx_stats_display_tso(ol_txrx_pdev_handle pdev)
 
 static void ol_txrx_tso_stats_init(ol_txrx_pdev_handle pdev)
 {
-	/*
-	 * keeping the body empty and not keeping an error print as print will
-	 * will show up everytime during driver load if TSO is not enabled.
-	 */
+#if defined(FEATURE_TSO)
+	qdf_spinlock_create(&pdev->stats.pub.tx.tso.tso_stats_lock);
+#endif
 }
 
 static void ol_txrx_tso_stats_deinit(ol_txrx_pdev_handle pdev)
 {
-	/*
-	 * keeping the body empty and not keeping an error print as print will
-	 * will show up everytime during driver unload if TSO is not enabled.
-	 */
+#if defined(FEATURE_TSO)
+	qdf_spinlock_destroy(&pdev->stats.pub.tx.tso.tso_stats_lock);
+#endif
 }
 
 static void ol_txrx_tso_stats_clear(ol_txrx_pdev_handle pdev)
