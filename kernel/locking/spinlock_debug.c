@@ -67,11 +67,13 @@ static void spin_dump(raw_spinlock_t *lock, const char *msg)
 		owner ? task_pid_nr(owner) : -1,
 		READ_ONCE(lock->owner_cpu));
 #ifdef CONFIG_DEBUG_SPINLOCK_BITE_ON_BUG
+	dump_stack();
 	msm_trigger_wdog_bite();
 #elif defined(CONFIG_DEBUG_SPINLOCK_PANIC_ON_BUG)
 	BUG();
-#endif
+#else
 	dump_stack();
+#endif
 }
 
 static void spin_bug(raw_spinlock_t *lock, const char *msg)
