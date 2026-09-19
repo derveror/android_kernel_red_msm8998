@@ -727,7 +727,7 @@
 };
 
 &snd_9335 {
-	/delete-property/ qcom,wsa-max-devs;
+	qcom,wsa-max-devs = <0>;
 	/delete-property/ qcom,wsa-devs;
 	/delete-property/ qcom,wsa-aux-dev-prefix;
 	qcom,tfa98xx-mi2s;
